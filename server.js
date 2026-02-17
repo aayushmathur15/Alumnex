@@ -5,6 +5,9 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const companyRoutes = require("./routes/company.routes");
 const jobRoleRoutes = require("./routes/jobrole.routes");
+const threadRoutes = require("./routes/thread.routes");
+
+
 
 
 
@@ -17,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobroles", jobRoleRoutes);
+app.use("/api/threads", threadRoutes);
 app.get("/", (req, res) => {
   res.send("Alumni Portal API Running");
 });
