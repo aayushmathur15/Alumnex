@@ -6,6 +6,8 @@ const connectDB = require("./config/db");
 const companyRoutes = require("./routes/company.routes");
 const jobRoleRoutes = require("./routes/jobrole.routes");
 const threadRoutes = require("./routes/thread.routes");
+const adminRoutes = require("./routes/admin.routes");
+
 
 
 
@@ -21,6 +23,7 @@ app.use(express.json());
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobroles", jobRoleRoutes);
 app.use("/api/threads", threadRoutes);
+app.use("/api/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Alumni Portal API Running");
 });

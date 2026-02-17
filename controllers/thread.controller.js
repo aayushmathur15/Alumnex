@@ -281,7 +281,22 @@ exports.bulkUploadThreads = async (req, res) => {
               });
             }
 
-            // 🔹 Create Thread
+            // 🔹 Create Thread after checking Duplication
+            const existingThread = await Thread.findOne({
+              company: company._id,
+              jobRole: jobRole._id,
+              yearOfPlacement: year,
+              candidateName: candidateName || "",
+            });
+
+            if (existingThread) {
+              errors.push({
+                row,
+                error: "Duplicate thread detected",
+              });
+              continue;
+            }
+
             await Thread.create({
               company: company._id,
               jobRole: jobRole._id,
@@ -293,6 +308,7 @@ exports.bulkUploadThreads = async (req, res) => {
               candidateName,
               linkedin,
             });
+
 
             inserted++;
           } catch (err) {

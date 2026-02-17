@@ -53,4 +53,9 @@ threadSchema.index({ jobRole: 1 });
 threadSchema.index({ yearOfPlacement: 1 });
 threadSchema.index({ experience: "text" });
 
+threadSchema.index(
+  { company: 1, jobRole: 1, yearOfPlacement: 1, candidateName: 1 },
+  { unique: true, sparse: true }
+);
+
 module.exports = mongoose.model("Thread", threadSchema);
