@@ -127,3 +127,92 @@ exports.getThreadById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// Company Stats
+exports.getCompanyStats = async (req, res) => {
+  try {
+    const stats = await Thread.aggregate([
+      {
+        $group: {
+          _id: "$company",
+          totalThreads: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "companies",
+          localField: "_id",
+          foreignField: "_id",
+          as: "companyDetails",
+        },
+      },
+      { $unwind: "$companyDetails" },
+      {
+        $project: {
+          _id: 0,
+          company: "$companyDetails.name",
+          slug: "$companyDetails.slug",
+          totalThreads: 1,
+        },
+      },
+      {
+        $sort: { totalThreads: -1 },
+      },
+    ]);
+
+    res.status(200).json(stats);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// Difficulty Distribution
+
+exports.getDifficultyStats = async (req, res) => {
+  try {
+    const stats = await Thread.aggregate([
+      {
+        $group: {
+          _id: "$difficulty",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          difficulty: "$_id",
+          count: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json(stats);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// Get YearWise Stats
+exports.getYearStats = async (req, res) => {
+  try {
+    const stats = await Thread.aggregate([
+      {
+        $group: {
+          _id: "$yearOfPlacement",
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id",
+          total: 1,
+        },
+      },
+      {
+        $sort: { year: -1 },
+      },
+    ]);
+
+    res.status(200).json(stats);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
