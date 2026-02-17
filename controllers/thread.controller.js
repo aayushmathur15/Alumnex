@@ -52,10 +52,11 @@ exports.createThread = async (req, res) => {
 // Get Threads with Filtering
 exports.getThreads = async (req, res) => {
   try {
-    const { company, role, year, difficulty } = req.query;
+    const { company, role, year, difficulty, page = 1, limit = 10, search } = req.query;
 
     let filter = {};
 
+    // Company filter
     if (company) {
       const companyDoc = await Company.findOne({ slug: company });
       if (companyDoc) {
@@ -63,6 +64,7 @@ exports.getThreads = async (req, res) => {
       }
     }
 
+    // Role filter
     if (role) {
       const roleDoc = await JobRole.findOne({ title: role });
       if (roleDoc) {
@@ -70,24 +72,44 @@ exports.getThreads = async (req, res) => {
       }
     }
 
+    // Year filter
     if (year) {
-      filter.yearOfPlacement = year;
+      filter.yearOfPlacement = Number(year);
     }
 
+    // Difficulty filter
     if (difficulty) {
       filter.difficulty = difficulty;
     }
 
+    // Text search (experience field)
+    if (search) {
+      filter.experience = { $regex: search, $options: "i" };
+    }
+
+    const skip = (page - 1) * limit;
+
     const threads = await Thread.find(filter)
       .populate("company", "name slug")
       .populate("jobRole", "title")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
 
-    res.status(200).json(threads);
+    const total = await Thread.countDocuments(filter);
+
+    res.status(200).json({
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+      results: threads,
+    });
+
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.getThreadById = async (req, res) => {
   try {
     const { id } = req.params;

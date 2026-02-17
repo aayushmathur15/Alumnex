@@ -51,5 +51,6 @@ const threadSchema = new mongoose.Schema(
 threadSchema.index({ company: 1 });
 threadSchema.index({ jobRole: 1 });
 threadSchema.index({ yearOfPlacement: 1 });
+threadSchema.index({ experience: "text" });
 
 module.exports = mongoose.model("Thread", threadSchema);
