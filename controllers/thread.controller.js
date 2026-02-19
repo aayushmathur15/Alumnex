@@ -19,18 +19,33 @@ exports.createThread = async (req, res) => {
       linkedin,
     } = req.body;
 
-    const company = await Company.findOne({ slug: companySlug });
+    // Auto-create or find Company
+    let company = await Company.findOne({ slug: companySlug });
+    
     if (!company) {
-      return res.status(404).json({ message: "Company not found" });
+      // Reconstruct company name from slug
+      const companyName = companySlug
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      company = await Company.create({
+        name: companyName,
+        slug: companySlug,
+      });
     }
 
-    const jobRole = await JobRole.findOne({
+    // Auto-create or find Job Role
+    let jobRole = await JobRole.findOne({
       title: roleTitle,
       company: company._id,
     });
 
     if (!jobRole) {
-      return res.status(404).json({ message: "Job role not found" });
+      jobRole = await JobRole.create({
+        title: roleTitle,
+        company: company._id,
+      });
     }
 
     const thread = await Thread.create({
@@ -84,9 +99,17 @@ exports.getThreads = async (req, res) => {
       filter.difficulty = difficulty;
     }
 
-    // Text search (experience field)
+    // Global text search across all thread fields
     if (search) {
-      filter.experience = { $regex: search, $options: "i" };
+      filter.$or = [
+        { experience: { $regex: search, $options: "i" } },
+        { candidateName: { $regex: search, $options: "i" } },
+        { linkedin: { $regex: search, $options: "i" } },
+        { rounds: { $regex: search, $options: "i" } },
+        { topicsCovered: { $regex: search, $options: "i" } },
+        { company: { $regex: search, $options: "i" } },
+        { jobRole: { $regex: search, $options: "i" } }
+      ];
     }
 
     const skip = (page - 1) * limit;

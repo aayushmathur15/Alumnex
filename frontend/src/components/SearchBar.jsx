@@ -1,30 +1,35 @@
-import React from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
 import useDebounce from '../hooks/useDebounce'
-import { useState, useEffect } from 'react'
 
-export default function SearchBar({ initial = '' }) {
-  const [q, setQ] = useState(initial)
-  const debounced = useDebounce(q, 350)
-  const [params, setParams] = useSearchParams()
-  const navigate = useNavigate()
+export default function SearchBar({ onSearch, placeholder = "Search experiences, companies, roles..." }) {
+  const [query, setQuery] = useState('')
+  const debounced = useDebounce(query, 350)
 
   useEffect(() => {
-    if (debounced.length === 0) return
-    params.set('q', debounced)
-    setParams(params)
-    navigate('/search?' + params.toString())
-  }, [debounced])
+    onSearch(debounced)
+  }, [debounced, onSearch])
 
   return (
     <div className="w-full">
-      <input
-        aria-label="Search"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search companies, roles, experiences..."
-        className="w-full border rounded-lg px-3 py-2 shadow-sm"
-      />
+      <div className="relative">
+        <input
+          type="text"
+          aria-label="Search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={placeholder}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery('')}
+            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            aria-label="Clear search"
+          >
+            ✕
+          </button>
+        )}
+      </div>
     </div>
   )
 }
