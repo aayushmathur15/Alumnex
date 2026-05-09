@@ -18,7 +18,19 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim().replace(/\/+$/g, ""))
+  : [];
+
+app.use(
+  cors()
+  );
+
+
+
+
+
+
 app.use(express.json());
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobroles", jobRoleRoutes);

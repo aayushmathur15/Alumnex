@@ -94,10 +94,11 @@ exports.getThreads = async (req, res) => {
       filter.yearOfPlacement = Number(year);
     }
 
-    // Difficulty filter
+    // Difficulty filter (case-insensitive match to support query values like 'easy' or 'EASY')
     if (difficulty) {
-      filter.difficulty = difficulty;
+      filter.difficulty = { $regex: `^${difficulty}$`, $options: "i" };
     }
+
 
     // Global text search across all thread fields
     if (search) {
@@ -105,13 +106,10 @@ exports.getThreads = async (req, res) => {
         { experience: { $regex: search, $options: "i" } },
         { candidateName: { $regex: search, $options: "i" } },
         { linkedin: { $regex: search, $options: "i" } },
-        { rounds: { $regex: search, $options: "i" } },
-        { topicsCovered: { $regex: search, $options: "i" } },
-        { company: { $regex: search, $options: "i" } },
-        { jobRole: { $regex: search, $options: "i" } }
+        { rounds: { $elemMatch: { $regex: search, $options: "i" } } },
+        { topicsCovered: { $elemMatch: { $regex: search, $options: "i" } } },
       ];
     }
-
     const skip = (page - 1) * limit;
 
     const threads = await Thread.find(filter)
